@@ -1,0 +1,29 @@
+@mixin Center($pos: absolute)
+  position: $pos
+  top: 50%
+  left: 50%
+  transform: translate( -50%, -50% )
+
+@mixin CenterX($pos: absolute)
+  position: $pos
+  left: 50%
+  transform: translateX(-50% )
+
+@mixin CenterY($pos: absolute)
+  position: $pos
+  top: 50%
+  transform: translateY(-50% )
+
+@mixin Size($size: 60px)
+  width: $size
+  height: $size
+
+@mixin BaseInpOrBtn()
+  padding: 0.4rem 1rem
+  border-radius: 2rem
+  outline: none
+  border: none
+  user-select: none
+  transition: background-color 200ms ease
+  cursor: pointer
+  position: relative
