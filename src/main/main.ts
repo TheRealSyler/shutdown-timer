@@ -21,12 +21,10 @@ const createWindow = async () => {
 
   win = new BrowserWindow({
     height: 400,
-    minHeight: 400,
-    maxHeight: 400,
     width: 1000,
-    minWidth: 1000,
-    maxWidth: 1000,
-    backgroundColor: '#222',
+    frame: false,
+    transparent: true,
+    backgroundColor: 'red',
     icon: path.join(
       __dirname,
       '../',

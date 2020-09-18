@@ -1,6 +1,6 @@
 {
   "name": "shutdown-timer",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "./dist/main.js",
   "scripts": {
     "build-main": "cross-env NODE_ENV=production webpack --config webpack.main.prod.config.js",
@@ -45,7 +45,8 @@
       "category": "your.app.category.type"
     },
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "src/assets"
     },
     "files": [
       "dist/",
@@ -114,7 +115,6 @@
   "dependencies": {
     "electron-store": "^5.1.0",
     "react": "^16.12.0",
-    "react-dom": "^16.12.0",
-    "s.theme": "/home/syler/Documents/GitHub/s.theme"
+    "react-dom": "^16.12.0"
   }
 }

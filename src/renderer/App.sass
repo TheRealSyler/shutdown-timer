@@ -1,11 +1,114 @@
 body
   margin: 0
   padding: 0
+*
+  color: #eee
+  font-family: sans-serif
+
+html
+  background: #111216
 
 .app
   display: flex
   flex-direction: column
   align-items: center
+  border-radius: 2px
+  overflow: hidden
+  padding-bottom: 20px
 
 .line-trough
   text-decoration: line-through
+
+.title-bar
+  -webkit-app-region: drag
+  height: 32px
+  margin: 0px
+
+  background: #212327
+  width: 100%
+  display: flex
+  flex-direction: row-reverse
+  align-items: center
+.title-btn
+  margin-right: 6px
+  background: #212327
+
+button,
+input
+  -webkit-app-region: no-drag
+  padding: 0.3rem 1rem
+  border-radius: 2px
+  outline: none
+  border: none
+  user-select: none
+  transition: background-color 200ms ease
+  cursor: pointer
+  position: relative
+
+.inp
+  background: #09e
+  font-size: 1.5rem
+
+input[type=time]
+  font-weight: bold
+
+input[type=time]::-webkit-datetime-edit-hour-field,
+input[type=time]::-webkit-datetime-edit-minute-field,
+input[type=time]::-webkit-datetime-edit-ampm-field
+  border-radius: 5px
+
+input[type=time]::-webkit-clear-button,
+input[type=time]::-webkit-inner-spin-button,
+  display: none
+
+.disabled
+  color: #555
+  &-line
+    background: #555
+
+.close-btn
+  position: relative
+  height: 24px
+  &::after,
+  &::before
+    position: absolute
+    content: ' '
+    background: #eee
+    height: 24px
+    width: 4px
+    border-radius: 2px
+    transition: background 200ms
+  &::after
+    transform: translateX(-2px) translateY(-12px) rotate(-45deg)
+  &::before
+    transform: translateX(-2px) translateY(-12px) rotate(45deg)
+
+  &:hover
+    &::after,
+    &::before
+      background: #f26
+
+  &:active
+    &::after,
+    &::before
+      background: #555
+.min-btn
+  position: relative
+  height: 24px
+  &::after
+    position: absolute
+    content: ' '
+    background: #eee
+    height: 4px
+    width: 20px
+    border-radius: 2px
+    transition: background 200ms
+    transform: translateX(-8px) translateY(4px)
+
+  &:hover
+    &::after
+      background: #999
+
+  &:active
+    &::after
+      background: #555

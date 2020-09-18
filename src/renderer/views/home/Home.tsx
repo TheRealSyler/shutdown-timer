@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 
 import './Home.sass';
-import { AppTheme } from '../../App';
-import { store, IScheduleDay } from '../../utility/utility.store';
-import { shutdownCheck, getTimeInMs } from '../../utility/utility.shutdown';
+import { store } from '../../utility/utility.store';
+import { getTimeInMs, shutdownCheck } from '../../utility/utility.shutdown';
 
 interface HomeProps {}
 
@@ -11,34 +10,27 @@ interface HomeState {
   now: Date;
   hasSentNotification: boolean;
   interval?: NodeJS.Timeout;
-  dates: Dates;
   changeTimeout: Date;
 }
-
-export type Dates = {
-  shutdownDate: Date;
-
-  isNextShutdownDate: boolean;
-
-  nextShutdownDate: Date;
-};
 
 class Home extends Component<HomeProps, HomeState> {
   constructor(props: HomeProps) {
     super(props);
-    const { currentDay, nextDay } = this.getDays();
+
     this.state = {
       hasSentNotification: false,
-      changeTimeout: new Date(Date.now() + getTimeInMs({ minutes: 1 })),
-      now: new Date(),
-      dates: this.getDates(currentDay, nextDay)
+      changeTimeout: this.getNewChangeTimeout(),
+      now: new Date()
     };
   }
 
+  private getNewChangeTimeout() {
+    return new Date(Date.now() + getTimeInMs({ seconds: 30 }));
+  }
+
   componentDidMount() {
-    store.onDidChange('schedule', () => {
-      this.UpdateState(new Date(Date.now() + getTimeInMs({ minutes: 1 })));
-      this.forceUpdate();
+    store.onDidChange('shutdownTime', () => {
+      this.UpdateState(this.getNewChangeTimeout());
     });
     this.setState({
       interval: setInterval(() => {
@@ -48,14 +40,14 @@ class Home extends Component<HomeProps, HomeState> {
   }
 
   private UpdateState(changeTimeout?: Date) {
-    const { currentDay, nextDay } = this.getDays();
-    const dates = this.getDates(currentDay, nextDay);
-
     this.setState({
-      dates,
       now: new Date(),
-      changeTimeout: changeTimeout ? changeTimeout : this.state.changeTimeout,
-      hasSentNotification: shutdownCheck.bind(this, { ...dates }, currentDay, changeTimeout)()
+      changeTimeout: changeTimeout || this.state.changeTimeout,
+      hasSentNotification: shutdownCheck(
+        this.canShutdown(changeTimeout),
+        this.getCurrentShutdownDate(),
+        !changeTimeout && this.state.hasSentNotification
+      )
     });
   }
 
@@ -66,19 +58,13 @@ class Home extends Component<HomeProps, HomeState> {
   render() {
     const { disabledClass, homeTimeClass } = this.getClasses();
 
-    const { currentDay, nextDay } = this.getDays();
+    const SHUTDOWN_DATE = this.getCurrentShutdownDate();
 
-    const {
-      shutdownDate,
+    if (SHUTDOWN_DATE.getTime() < Date.now()) {
+      SHUTDOWN_DATE.setDate(SHUTDOWN_DATE.getDate() + 1);
+    }
 
-      isNextShutdownDate,
-
-      nextShutdownDate
-    } = this.state.dates;
-
-    const SHUTDOWN_DATE = isNextShutdownDate ? nextShutdownDate : shutdownDate;
-
-    const ENABLED = isNextShutdownDate ? nextDay.enabled : currentDay.enabled;
+    const ENABLED = this.canShutdown();
 
     return (
       <div className="home">
@@ -87,10 +73,7 @@ class Home extends Component<HomeProps, HomeState> {
           <span className={ENABLED ? '' : disabledClass}>
             {this.GetTimeDifference(SHUTDOWN_DATE)}
           </span>
-          <span className={homeTimeClass}>
-            ({SHUTDOWN_DATE.toLocaleTimeString()}
-            {isNextShutdownDate ? ' '.concat(nextDay.name) : ''})
-          </span>
+          <span className={homeTimeClass}>({SHUTDOWN_DATE.toLocaleTimeString()})</span>
           {this.disabledLineTrough(ENABLED)}
         </span>
 
@@ -105,29 +88,27 @@ class Home extends Component<HomeProps, HomeState> {
     );
   }
 
-  protected canShutdown() {
+  private getCurrentShutdownDate() {
+    return this.getDate(store.get('shutdownTime') || '00:00');
+  }
+
+  protected canShutdown(changeTimeout?: Date) {
+    if (changeTimeout) {
+      return changeTimeout.getTime() < Date.now();
+    }
     return this.state.changeTimeout.getTime() < Date.now();
   }
 
-  private getDays() {
-    const now = new Date();
-    const schedule = store.get('schedule');
-    const currentDay = schedule[now.getDay()];
-    const nextDay = schedule[(now.getDay() + 1) % 7];
-    return { currentDay, nextDay };
-  }
-
   private getClasses() {
-    const disabledClass = AppTheme.Class.colors('disabled', 'color');
+    const disabledClass = 'disabled';
     const homeTimeClass = `home-time ${disabledClass}`;
     return { disabledClass, homeTimeClass };
   }
 
   private disabledLineTrough(enabled: boolean) {
-    const disabledBgClass = AppTheme.Class.colors('disabled', 'background');
     return enabled ? null : (
       <div
-        className={disabledBgClass}
+        className="disabled-line"
         style={{
           position: 'absolute',
           width: '100%',
@@ -137,30 +118,14 @@ class Home extends Component<HomeProps, HomeState> {
     );
   }
 
-  private getDates(currentDay: IScheduleDay, nextDay: IScheduleDay) {
-    const shutdownDate = this.getDate(currentDay);
-
-    const nextShutdownDate = this.getDate(nextDay, true);
-
-    const isNextShutdownDate = shutdownDate.getTime() + getTimeInMs({ minutes: 5 }) < Date.now();
-
-    return {
-      isNextShutdownDate,
-      shutdownDate,
-      nextShutdownDate
-    };
-  }
-
-  private getDate(day: IScheduleDay, isNext?: boolean) {
-    const time = day.shutdownTime.split(':');
+  private getDate(time: string) {
+    const currentTime = time.split(':');
     const date = new Date();
-    date.setHours(+time[0]);
-    date.setMinutes(+time[1]);
+    date.setHours(+currentTime[0]);
+    date.setMinutes(+currentTime[1]);
     date.setSeconds(0);
     date.setMilliseconds(0);
-    if (isNext) {
-      date.setDate(date.getDate() + 1);
-    }
+
     return date;
   }
 
@@ -173,6 +138,7 @@ class Home extends Component<HomeProps, HomeState> {
       Minutes.toString()
     )}:${this.getFixedNum(Seconds.toString())}`;
   }
+
   private getFixedNum(num: string) {
     return num.length === 1 ? `0${num}` : num;
   }
