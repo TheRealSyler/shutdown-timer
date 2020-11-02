@@ -1,0 +1,61 @@
+.title-bar
+  -webkit-app-region: drag
+  height: 32px
+  margin: 0px
+  background: #212327
+  width: 100%
+  display: flex
+  align-items: center
+  justify-content: space-between
+
+  &-btn
+    margin-right: 6px
+    background: #212327
+
+  &-close-btn
+    position: relative
+    height: 24px
+    &::after,
+    &::before
+      position: absolute
+      content: ' '
+      background: #eee
+      height: 24px
+      width: 4px
+      border-radius: 2px
+      transition: background 200ms
+    &::after
+      transform: translateX(-2px) translateY(-12px) rotate(-45deg)
+    &::before
+      transform: translateX(-2px) translateY(-12px) rotate(45deg)
+
+    &:hover
+      &::after,
+      &::before
+        background: #f26
+
+    &:active
+      &::after,
+      &::before
+        background: #555
+
+  &-min-btn
+    position: relative
+    height: 24px
+    &::after
+      position: absolute
+      content: ' '
+      background: #eee
+      height: 4px
+      width: 20px
+      border-radius: 2px
+      transition: background 200ms
+      transform: translateX(-8px) translateY(4px)
+
+    &:hover
+      &::after
+        background: #999
+
+    &:active
+      &::after
+        background: #555
