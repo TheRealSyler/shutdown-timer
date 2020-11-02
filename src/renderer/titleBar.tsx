@@ -7,7 +7,8 @@ export const TitleBar: FunctionComponent = () => {
   return (
     <div className="title-bar">
       <div />
-      <span>{document.title}</span>
+      <div />
+      {/* <span>{document.title}</span> */}
       <div>
         <button className="title-bar-btn title-bar-min-btn" onClick={() => win.minimize()} />
         <button className="title-bar-btn title-bar-close-btn" onClick={() => win.close()} />
